@@ -1,84 +1,57 @@
-function Cell() {
-    let value = 0
-    let marked = false
-    const mark = function(symbol) {
-        value = symbol
-        marked = true
-    }
-    const getStatus = function() {
-        return {value, marked}
-    }
-    return {mark, getStatus}
-}
-
 function Gameboard() {
-    const board = []
-    for (let i = 0; i < 9; i++) {
-        board.push(Cell())
-    }
+    const board = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     const getBoard = () => board
-
     const markCell = function(position, player) {
-        if (board[position].getStatus().marked === false) {
-            board[position].mark(player.symbol)
-            return false
-        } else {
-            return true
-        }
+        board[position] = player.symbol
     }
     const displayBoard = function() {
-        const simpleBoard = board.map((cell) => cell.getStatus().value)
-        console.log(simpleBoard[0], simpleBoard[1], simpleBoard[2])
-        console.log(simpleBoard[3], simpleBoard[4], simpleBoard[5])
-        console.log(simpleBoard[6], simpleBoard[7], simpleBoard[8])
+        console.log(board[0], board[1], board[2])
+        console.log(board[3], board[4], board[5])
+        console.log(board[6], board[7], board[8])
     }
     return {getBoard, markCell, displayBoard}
 }
 
-function winChecker(board) {
-    let values = board.map((item) => item.getStatus())
-    if (values[0].value === values[1].value && values[2].value === values[1].value && values[1].marked ||
-        values[3].value === values[4].value && values[5].value === values[4].value && values[4].marked ||
-        values[6].value === values[7].value && values[8].value === values[7].value && values[7].marked ||
-        values[0].value === values[3].value && values[6].value === values[3].value && values[3].marked ||
-        values[1].value === values[4].value && values[7].value === values[4].value && values[4].marked ||
-        values[2].value === values[5].value && values[8].value === values[5].value && values[5].marked ||
-        values[0].value === values[4].value && values[8].value === values[4].value && values[4].marked ||
-        values[2].value === values[4].value && values[6].value === values[4].value && values[4].marked) {
-        return 2
-    } else if (values.filter((item) => !item.marked) == false) {
-        return 1
-    } else {
-        return 0
-    }
-}
-
-function Game(
-    playerOneName = 'Player One',
-    playerTwoName = 'Player Two'
-) {
-    const players = [{user: playerOneName, symbol: 1},
-        {user: playerTwoName, symbol: 2}]
-    console.log(`${players[0].user} as ${players[0].symbol} vs. ${players[1].user} as ${players[1].symbol} `)
-    const newBoard = Gameboard()
+function Game() {
+    const players = [{user: 'Player One', symbol: true},
+        {user: 'Player Two', symbol: false}]
+    const gameboard = Gameboard()
     let active = players[0]
     const getActivePlayer = () => active.user
-    const switchTurn = () => active = active === players[0] ? players[1] : players[0]
+    const switchPlayer = () => active = active === players[0] ? players[1] : players[0]
+
+    let gameStatus = `${active.user}'s turn.`
+    console.log(gameStatus)
 
     const playRound = function(position) {
-        if (newBoard.markCell(position, active)) {
-            return console.log('Invalid position, try again')
+        if (!gameStatus.includes('turn')) {
+            return console.log('Game is over.')
         }
-        newBoard.displayBoard()
-        const winCheck = winChecker(newBoard.getBoard(), moveCount)
-        if (winCheck === 2) {
-            console.log(`${active.user} won!`)
-        } else if (winCheck === 1) {
-            console.log('Draw!')
+        gameboard.markCell(position, active)
+        findGameStatus()
         }
-        switchTurn()
-    }
-    return {playRound, getActivePlayer}
+    function findGameStatus() {
+        const b = gameboard.getBoard()
+        if (b[0] === b[1] && b[2] === b[1] ||
+            b[3] === b[4] && b[5] === b[4] ||
+            b[6] === b[7] && b[8] === b[7] ||
+            b[0] === b[3] && b[6] === b[3] ||
+            b[1] === b[4] && b[7] === b[4] ||
+            b[2] === b[5] && b[8] === b[5] ||
+            b[0] === b[4] && b[8] === b[4] ||
+            b[2] === b[4] && b[6] === b[4]) {
+            gameStatus = `${active.user} won!`
+        } else if (b.filter((item) => typeof item !== 'boolean') == false) {
+            gameStatus = 'Draw!'
+        } else {
+            switchPlayer()
+            gameStatus = `${active.user}'s turn.`
+        }
+        gameboard.displayBoard()
+        console.log(gameStatus)
+    }   
+    const getGameStatus = () => gameStatus
+    return {playRound, getActivePlayer, getGameStatus}
 }
 
 const newGame = Game()
