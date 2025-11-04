@@ -1,4 +1,5 @@
 const boardDOM = document.querySelector('.gameboard')
+
 function Gameboard() {
     const board = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     const getBoard = () => board
@@ -26,6 +27,7 @@ function Game() {
     gameboard.displayBoard()
 
     let gameStatus = `${active.user}'s turn.`
+    const getGameStatus = () => gameStatus
     console.log(gameStatus)
 
     const cells = document.querySelectorAll('.cell')
@@ -59,9 +61,19 @@ function Game() {
             gameStatus = `${active.user}'s turn.`
         }
         console.log(gameStatus)
-    }   
-    const getGameStatus = () => gameStatus
-    return {playRound, getGameStatus}
+    }
+    
+    const endGame = function() {
+        cells.forEach((cell) => cell.remove())
+    }
+    return {playRound, getGameStatus, endGame}
 }
 
-const newGame = Game()
+const games = [Game()]
+let counter = 0
+const newButton = document.querySelector('.new')
+newButton.addEventListener('click', function() {
+    games[counter].endGame()
+    counter++
+    games.push(Game())
+})
