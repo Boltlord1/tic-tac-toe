@@ -35,6 +35,24 @@ function Gameboard() {
     return {getBoard, markCell, displayBoard}
 }
 
+function winChecker(board) {
+    let values = board.map((item) => item.getStatus())
+    if (values[0].value === values[1].value && values[2].value === values[1].value && values[1].marked ||
+        values[3].value === values[4].value && values[5].value === values[4].value && values[4].marked ||
+        values[6].value === values[7].value && values[8].value === values[7].value && values[7].marked ||
+        values[0].value === values[3].value && values[6].value === values[3].value && values[3].marked ||
+        values[1].value === values[4].value && values[7].value === values[4].value && values[4].marked ||
+        values[2].value === values[5].value && values[8].value === values[5].value && values[5].marked ||
+        values[0].value === values[4].value && values[8].value === values[4].value && values[4].marked ||
+        values[2].value === values[4].value && values[6].value === values[4].value && values[4].marked) {
+        return 2
+    } else if (values.filter((item) => !item.marked) == false) {
+        return 1
+    } else {
+        return 0
+    }
+}
+
 function Game(
     playerOneName = 'Player One',
     playerTwoName = 'Player Two'
@@ -49,9 +67,15 @@ function Game(
 
     const playRound = function(position) {
         if (newBoard.markCell(position, active)) {
-            return console.log('Try again')
+            return console.log('Invalid position, try again')
         }
         newBoard.displayBoard()
+        const winCheck = winChecker(newBoard.getBoard(), moveCount)
+        if (winCheck === 2) {
+            console.log(`${active.user} won!`)
+        } else if (winCheck === 1) {
+            console.log('Draw!')
+        }
         switchTurn()
     }
     return {playRound, getActivePlayer}
