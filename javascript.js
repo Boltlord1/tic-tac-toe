@@ -4,7 +4,7 @@ function Gameboard() {
     const board = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     const getBoard = () => board
     const markCell = function(position, player) {
-        board[position] = player.symbol
+        board[position] = player.value
     }
     const displayBoard = function() {
         const cellsDOM = []
@@ -17,24 +17,37 @@ function Gameboard() {
     return {getBoard, markCell, displayBoard}
 }
 
-function Game() {
-    const players = [{user: 'Player One', symbol: true, string: 'X'},
-        {user: 'Player Two', symbol: false, string: 'O'}]
-    let active = players[0]
-    const switchPlayer = () => active = active === players[0] ? players[1] : players[0]
+function Player(name, sym) {
+    const username = name
+    const symbol = sym
+    let score = 0
+    
+    const getUsername = () => username
+    const getSymbol = () => symbol
+    const getScore = () => score
+    const incrementScore = function() {score++}
+
+    return {getUsername, getSymbol, getScore, incrementScore}
+}
+
+function Game(pX, pO) {
+    pX.value = true
+    pO.value = false
+    let active = pX
+    const switchPlayer = () => active = active === pX? pO : pX
 
     const gameboard = Gameboard()
     gameboard.displayBoard()
 
-    let gameStatus = `${active.user}'s turn.`
+    let gameStatus = `${active.getUsername()}'s turn.`
     const getGameStatus = () => gameStatus
     console.log(gameStatus)
 
     const cells = document.querySelectorAll('.cell')
     for (const [index, cell] of cells.entries()) {
         cell.addEventListener('click', function() {
-            if (!gameStatus.includes('turn')) return console.log('Game is over')
-            cell.textContent = active.string
+            if (!gameStatus.includes('turn')) return
+            cell.textContent = active.getSymbol()
             playRound(index)
         }, {once: true})
     }
@@ -53,27 +66,32 @@ function Game() {
             b[2] === b[5] && b[8] === b[5] ||
             b[0] === b[4] && b[8] === b[4] ||
             b[2] === b[4] && b[6] === b[4]) {
-            gameStatus = `${active.user} won!`
+            gameStatus = `${active.getUsername()} won!`
+            active.incrementScore()
+            console.log(`${pX.getUsername()} - ${pX.getScore()} vs. ${pO.getScore()} - ${pO.getUsername()}`)
         } else if (b.filter((item) => typeof item !== 'boolean') == false) {
             gameStatus = 'Draw!'
         } else {
             switchPlayer()
-            gameStatus = `${active.user}'s turn.`
+            gameStatus = `${active.getUsername()}'s turn.`
         }
         console.log(gameStatus)
     }
-    
+
     const endGame = function() {
         cells.forEach((cell) => cell.remove())
     }
     return {playRound, getGameStatus, endGame}
 }
 
-const games = [Game()]
+const bruce = Player('Bruce', 'X')
+const rob = Player('Rob', 'O')
+
+const games = [Game(bruce, rob)]
 let counter = 0
 const newButton = document.querySelector('.new')
 newButton.addEventListener('click', function() {
     games[counter].endGame()
     counter++
-    games.push(Game())
+    games.push(Game(bruce, rob))
 })
