@@ -8,3 +8,30 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+body {
+    background-color: hsl(0, 0%, 25%);
+    display: flex;
+    justify-content: center;
+}
+
+.gameboard {
+    background-color: red;
+    padding: 15px;
+    display: grid;
+    grid-template-columns: repeat(3, 150px);
+    grid-template-rows: repeat(3, 150px);
+    gap: 15px;
+}
+
+.cell {
+    background-color: white;
+    font-size: 10rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cell:hover {
+    background-color: hsl(0, 0%, 90%);
+}

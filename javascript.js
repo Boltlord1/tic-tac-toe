@@ -1,3 +1,4 @@
+const boardDOM = document.querySelector('.gameboard')
 function Gameboard() {
     const board = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     const getBoard = () => board
@@ -5,28 +6,38 @@ function Gameboard() {
         board[position] = player.symbol
     }
     const displayBoard = function() {
-        console.log(board[0], board[1], board[2])
-        console.log(board[3], board[4], board[5])
-        console.log(board[6], board[7], board[8])
+        const cellsDOM = []
+        for (let i = 0; i < 9; i++) {
+            cellsDOM.push(document.createElement('div'))
+            cellsDOM[i].classList.add('cell')
+            boardDOM.appendChild(cellsDOM[i])
+        }
     }
     return {getBoard, markCell, displayBoard}
 }
 
 function Game() {
-    const players = [{user: 'Player One', symbol: true},
-        {user: 'Player Two', symbol: false}]
-    const gameboard = Gameboard()
+    const players = [{user: 'Player One', symbol: true, string: 'X'},
+        {user: 'Player Two', symbol: false, string: 'O'}]
     let active = players[0]
-    const getActivePlayer = () => active.user
     const switchPlayer = () => active = active === players[0] ? players[1] : players[0]
+
+    const gameboard = Gameboard()
+    gameboard.displayBoard()
 
     let gameStatus = `${active.user}'s turn.`
     console.log(gameStatus)
 
+    const cells = document.querySelectorAll('.cell')
+    for (const [index, cell] of cells.entries()) {
+        cell.addEventListener('click', function() {
+            if (!gameStatus.includes('turn')) return console.log('Game is over')
+            cell.textContent = active.string
+            playRound(index)
+        }, {once: true})
+    }
+
     const playRound = function(position) {
-        if (!gameStatus.includes('turn')) {
-            return console.log('Game is over.')
-        }
         gameboard.markCell(position, active)
         findGameStatus()
         }
@@ -47,11 +58,10 @@ function Game() {
             switchPlayer()
             gameStatus = `${active.user}'s turn.`
         }
-        gameboard.displayBoard()
         console.log(gameStatus)
     }   
     const getGameStatus = () => gameStatus
-    return {playRound, getActivePlayer, getGameStatus}
+    return {playRound, getGameStatus}
 }
 
 const newGame = Game()
