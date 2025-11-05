@@ -33,6 +33,7 @@ function Player(name, sym) {
 function Game(array) {
     let value = true
     let active = array[0]
+    const getActivePlayer = () => active
     const switchPlayer = function () {
         active = active === array[0] ? array[1] : array[0]
         value = value === true ? false : true
@@ -82,12 +83,35 @@ function Game(array) {
     const endGame = function() {
         cells.forEach((cell) => cell.remove())
     }
-    return {playRound, getGameStatus, endGame}
+    return {playRound, getGameStatus, getActivePlayer, endGame}
 }
 
 let counter = 0
 let currentPlayers = []
 const currentGames = []
+let currentMatchup = []
+
+const list = document.querySelector('.list')
+function Matchup(players) {
+    const matchup = document.createElement('li')
+    matchup.classList.add('matchup')
+    const matchHeader = document.createElement('h2')
+    matchHeader.textContent = `${players[0].getUsername()} (${players[0].getScore()}) vs. ${players[1].getUsername()} (${players[1].getScore()})`
+    list.appendChild(matchup)
+    matchup.appendChild(matchHeader)
+
+    let matchCount = 1
+    const appendMatch = function(winner) {
+        const match = document.createElement('li')
+        match.classList.add('match')
+        match.textContent = `${matchCount}. ${winner} won!`
+        matchup.appendChild(match)
+        matchHeader.textContent = `${players[0].getUsername()} (${players[0].getScore()}) vs. ${players[1].getUsername()} (${players[1].getScore()})`
+        matchCount++
+    }
+
+    return {appendMatch}
+}
 
 const form = document.querySelector('.form')
 form.addEventListener('submit', createPlayers)
@@ -101,11 +125,13 @@ function createPlayers(event) {
     const playerOne = Player(oneName, oneSymbol)
     const playerTwo = Player(twoName, twoSymbol)
     currentPlayers = [playerOne, playerTwo]
+    currentMatchup = Matchup(currentPlayers)
     currentGames.push(Game(currentPlayers))
 }
 
 const newButton = document.querySelector('.new')
 newButton.addEventListener('click', function() {
+    currentMatchup.appendMatch(currentGames[counter].getActivePlayer().getUsername())
     currentGames[counter].endGame()
     counter++
     currentGames.push(Game(currentPlayers))

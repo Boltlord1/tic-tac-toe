@@ -51,3 +51,7 @@ body {
     flex-direction: column;
     gap: 20px;
 }
+
+ul, ol, li {
+    list-style: none;
+}

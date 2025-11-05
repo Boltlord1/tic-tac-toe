@@ -15,7 +15,7 @@
         <form class="form">
             <h2>Player One</h2>
             <label for="one-name">Username:</label>
-            <input type="text" name="one-name" id="one-name" required>
+            <input type="text" name="one-name" id="one-name" maxlength="16" required>
             <div class="select">
                 <label for="one-symbol">Symbol:</label>
                 <select name="one-symbol" id="one-symbol">
@@ -25,7 +25,7 @@
             </div>
             <h2>Player Two</h2>
             <label for="two-name">Username:</label>
-            <input type="text" name="two-name" id="two-name" required>
+            <input type="text" name="two-name" id="two-name" maxlength="16" required>
             <div class="select">
                 <label for="two-symbol">Symbol:</label>
                 <select name="two-symbol" id="two-symbol">
@@ -37,9 +37,10 @@
             <button type="button" class="new">New Game</button>
         </form>
         <div class="gameboard"></div>
-        <ol class="list">
-            <li>alc</li>
-        </ol>
+        <ul class="list">
+            <h2>Matchups</h2>
+            <li></li>
+        </ll>
     </div>
 </body>
 </html>
