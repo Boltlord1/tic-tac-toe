@@ -12,17 +12,32 @@
 
     </div>
     <div class="main">
-        <div class="left">
-            <button class="new">New Game</button>
-            <div class="player-one">
-
+        <form class="form">
+            <h2>Player One</h2>
+            <label for="one-name">Username:</label>
+            <input type="text" name="one-name" id="one-name" required>
+            <div class="select">
+                <label for="one-symbol">Symbol:</label>
+                <select name="one-symbol" id="one-symbol">
+                    <option value="X" selected>X</option>
+                    <option value="O">O</option>
+                </select>
             </div>
-            <div class="player-two">
-
+            <h2>Player Two</h2>
+            <label for="two-name">Username:</label>
+            <input type="text" name="two-name" id="two-name" required>
+            <div class="select">
+                <label for="two-symbol">Symbol:</label>
+                <select name="two-symbol" id="two-symbol">
+                    <option value="X">X</option>
+                    <option value="O" selected>O</option>
+                </select>
             </div>
-        </div>
+            <button type="submit" class="submit">Submit users</button>
+            <button type="button" class="new">New Game</button>
+        </form>
         <div class="gameboard"></div>
-        <ol class="right">
+        <ol class="list">
             <li>alc</li>
         </ol>
     </div>

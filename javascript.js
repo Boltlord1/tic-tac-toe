@@ -3,8 +3,8 @@ const boardDOM = document.querySelector('.gameboard')
 function Gameboard() {
     const board = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     const getBoard = () => board
-    const markCell = function(position, player) {
-        board[position] = player.value
+    const markCell = function(position, value) {
+        board[position] = value
     }
     const displayBoard = function() {
         const cellsDOM = []
@@ -30,18 +30,19 @@ function Player(name, sym) {
     return {getUsername, getSymbol, getScore, incrementScore}
 }
 
-function Game(pX, pO) {
-    pX.value = true
-    pO.value = false
-    let active = pX
-    const switchPlayer = () => active = active === pX? pO : pX
+function Game(array) {
+    let value = true
+    let active = array[0]
+    const switchPlayer = function () {
+        active = active === array[0] ? array[1] : array[0]
+        value = value === true ? false : true
+    }
 
     const gameboard = Gameboard()
     gameboard.displayBoard()
 
     let gameStatus = `${active.getUsername()}'s turn.`
     const getGameStatus = () => gameStatus
-    console.log(gameStatus)
 
     const cells = document.querySelectorAll('.cell')
     for (const [index, cell] of cells.entries()) {
@@ -68,14 +69,14 @@ function Game(pX, pO) {
             b[2] === b[4] && b[6] === b[4]) {
             gameStatus = `${active.getUsername()} won!`
             active.incrementScore()
-            console.log(`${pX.getUsername()} - ${pX.getScore()} vs. ${pO.getScore()} - ${pO.getUsername()}`)
+            console.log(`${array[0].getUsername()} - ${array[0].getScore()} vs. ${array[1].getScore()} - ${array[1].getUsername()}`)
         } else if (b.filter((item) => typeof item !== 'boolean') == false) {
             gameStatus = 'Draw!'
+            console.log(gameStatus)
         } else {
             switchPlayer()
             gameStatus = `${active.getUsername()}'s turn.`
         }
-        console.log(gameStatus)
     }
 
     const endGame = function() {
@@ -84,14 +85,35 @@ function Game(pX, pO) {
     return {playRound, getGameStatus, endGame}
 }
 
-const bruce = Player('Bruce', 'X')
-const rob = Player('Rob', 'O')
-
-const games = [Game(bruce, rob)]
 let counter = 0
+let currentPlayers = []
+const currentGames = []
+
+const form = document.querySelector('.form')
+form.addEventListener('submit', createPlayers)
+function createPlayers(event) {
+    event.preventDefault()
+    const formData = new FormData(form)
+    const oneName = formData.get('one-name')
+    const oneSymbol = formData.get('one-symbol')
+    const twoName = formData.get('two-name')
+    const twoSymbol = formData.get('two-symbol')
+    const playerOne = Player(oneName, oneSymbol)
+    const playerTwo = Player(twoName, twoSymbol)
+    currentPlayers = [playerOne, playerTwo]
+    currentGames.push(Game(currentPlayers))
+}
+
 const newButton = document.querySelector('.new')
 newButton.addEventListener('click', function() {
-    games[counter].endGame()
+    currentGames[counter].endGame()
     counter++
-    games.push(Game(bruce, rob))
+    currentGames.push(Game(currentPlayers))
+})
+const submitButton = document.querySelector('.submit')
+submitButton.addEventListener('click', function() {
+    if (currentGames != false) currentGames[counter].endGame()
+    currentPlayers.length = 0
+    currentGames.length = 0
+    counter = 0
 })
