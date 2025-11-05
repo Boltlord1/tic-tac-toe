@@ -1,20 +1,15 @@
-const boardDOM = document.querySelector('.gameboard')
-
 function Gameboard() {
-    const board = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    const getBoard = () => board
+    const board = []
+    for (let i = 0; i < 9; i++) {
+        board.push({value: i, dom: document.createElement('button')})
+    }
+    const getBoard = () => board.map((item) => item.value)
+    const getDisplay = () => board.map((item) => item.dom)
     const markCell = function(position, value) {
-        board[position] = value
+        board[position].value = value
     }
-    const displayBoard = function() {
-        const cellsDOM = []
-        for (let i = 0; i < 9; i++) {
-            cellsDOM.push(document.createElement('div'))
-            cellsDOM[i].classList.add('cell')
-            boardDOM.appendChild(cellsDOM[i])
-        }
-    }
-    return {getBoard, markCell, displayBoard}
+    
+    return {getBoard, getDisplay, markCell}
 }
 
 function Player(name, sym) {
@@ -40,22 +35,18 @@ function Game(array) {
     }
 
     const gameboard = Gameboard()
-    gameboard.displayBoard()
 
-    let gameStatus = `${active.getUsername()}'s turn.`
+    let gameStatus = 0
     const getGameStatus = () => gameStatus
-
-    const cells = document.querySelectorAll('.cell')
-    for (const [index, cell] of cells.entries()) {
-        cell.addEventListener('click', function() {
-            if (!gameStatus.includes('turn')) return
-            cell.textContent = active.getSymbol()
-            playRound(index)
-        }, {once: true})
+    const endGame = function() {
+        if (gameStatus === 0) gameStatus = 1
+        domController.disableCells(gameboard.getDisplay())
     }
 
-    const playRound = function(position) {
-        gameboard.markCell(position, active)
+    const playRound = function(position, cell) {
+        if (gameStatus !== 0) return
+        gameboard.markCell(position, value)
+        cell.textContent = active.getSymbol()
         findGameStatus()
         }
     function findGameStatus() {
@@ -68,28 +59,21 @@ function Game(array) {
             b[2] === b[5] && b[8] === b[5] ||
             b[0] === b[4] && b[8] === b[4] ||
             b[2] === b[4] && b[6] === b[4]) {
-            gameStatus = `${active.getUsername()} won!`
+            gameStatus = 2
             active.incrementScore()
+            endGame()
             console.log(`${array[0].getUsername()} - ${array[0].getScore()} vs. ${array[1].getScore()} - ${array[1].getUsername()}`)
         } else if (b.filter((item) => typeof item !== 'boolean') == false) {
-            gameStatus = 'Draw!'
-            console.log(gameStatus)
+            gameStatus = 1
+            endGame()
         } else {
             switchPlayer()
-            gameStatus = `${active.getUsername()}'s turn.`
         }
     }
 
-    const endGame = function() {
-        cells.forEach((cell) => cell.remove())
-    }
+    domController.displayBoard(gameboard.getDisplay(), playRound)
     return {playRound, getGameStatus, getActivePlayer, endGame}
 }
-
-let counter = 0
-let currentPlayers = []
-const currentGames = []
-let currentMatchup = []
 
 const list = document.querySelector('.list')
 function Matchup(players) {
@@ -113,9 +97,29 @@ function Matchup(players) {
     return {appendMatch}
 }
 
-const form = document.querySelector('.form')
-form.addEventListener('submit', createPlayers)
-function createPlayers(event) {
+
+
+const domController = (function() {
+    const boardDOM = document.querySelector('.gameboard')
+    const displayBoard = function(array, func) {
+        for (const [index, cell] of array.entries()) {
+            cell.classList.add('cell')
+            boardDOM.appendChild(cell)
+            cell.addEventListener('click', function() {
+                func(index, cell)
+            })
+        }
+    }
+
+    const disableCells = function(array) {
+        for (const cell of array) {
+            cell.setAttribute('disabled', true)
+        }
+    }
+
+    /* const form = document.querySelector('.form')
+    form.addEventListener('submit', createPlayers)
+    function createPlayers(event) {
     event.preventDefault()
     const formData = new FormData(form)
     const oneName = formData.get('one-name')
@@ -124,22 +128,9 @@ function createPlayers(event) {
     const twoSymbol = formData.get('two-symbol')
     const playerOne = Player(oneName, oneSymbol)
     const playerTwo = Player(twoName, twoSymbol)
-    currentPlayers = [playerOne, playerTwo]
-    currentMatchup = Matchup(currentPlayers)
-    currentGames.push(Game(currentPlayers))
-}
+    } */
+   
+    return {displayBoard, disableCells}
+})()
 
-const newButton = document.querySelector('.new')
-newButton.addEventListener('click', function() {
-    currentMatchup.appendMatch(currentGames[counter].getActivePlayer().getUsername())
-    currentGames[counter].endGame()
-    counter++
-    currentGames.push(Game(currentPlayers))
-})
-const submitButton = document.querySelector('.submit')
-submitButton.addEventListener('click', function() {
-    if (currentGames != false) currentGames[counter].endGame()
-    currentPlayers.length = 0
-    currentGames.length = 0
-    counter = 0
-})
+const newGame = Game([Player('Bruce', 'X'), Player('Rob', 'O ')])
