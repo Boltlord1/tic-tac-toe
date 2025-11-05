@@ -25,22 +25,22 @@ function Player(name, sym) {
     return {getUsername, getSymbol, getScore, incrementScore}
 }
 
-function Game(array) {
+function Game(pX, pO) {
     let value = true
-    let active = array[0]
+    let active = pX
     const getActivePlayer = () => active
     const switchPlayer = function () {
-        active = active === array[0] ? array[1] : array[0]
+        active = active === pX ? pO : pX
         value = value === true ? false : true
     }
 
     const gameboard = Gameboard()
-
     let gameStatus = 0
     const getGameStatus = () => gameStatus
     const endGame = function() {
         if (gameStatus === 0) gameStatus = 1
-        domController.disableCells(gameboard.getDisplay())
+        MatchController.getMatchup()(gameStatus, active)
+        DomController.disableCells(gameboard.getDisplay())
     }
 
     const playRound = function(position, cell) {
@@ -62,7 +62,7 @@ function Game(array) {
             gameStatus = 2
             active.incrementScore()
             endGame()
-            console.log(`${array[0].getUsername()} - ${array[0].getScore()} vs. ${array[1].getScore()} - ${array[1].getUsername()}`)
+            console.log(`${pX.getUsername()} - ${pX.getScore()} vs. ${pO.getScore()} - ${pO.getUsername()}`)
         } else if (b.filter((item) => typeof item !== 'boolean') == false) {
             gameStatus = 1
             endGame()
@@ -71,35 +71,37 @@ function Game(array) {
         }
     }
 
-    domController.displayBoard(gameboard.getDisplay(), playRound)
+    DomController.displayBoard(gameboard.getDisplay(), playRound)
     return {playRound, getGameStatus, getActivePlayer, endGame}
 }
 
-const list = document.querySelector('.list')
-function Matchup(players) {
-    const matchup = document.createElement('li')
-    matchup.classList.add('matchup')
-    const matchHeader = document.createElement('h2')
-    matchHeader.textContent = `${players[0].getUsername()} (${players[0].getScore()}) vs. ${players[1].getUsername()} (${players[1].getScore()})`
-    list.appendChild(matchup)
-    matchup.appendChild(matchHeader)
+const MatchController = (function() {
+    let players = []
+    let game
+    let matchup
+    const getMatchup = () => matchup
 
-    let matchCount = 1
-    const appendMatch = function(winner) {
-        const match = document.createElement('li')
-        match.classList.add('match')
-        match.textContent = `${matchCount}. ${winner} won!`
-        matchup.appendChild(match)
-        matchHeader.textContent = `${players[0].getUsername()} (${players[0].getScore()}) vs. ${players[1].getUsername()} (${players[1].getScore()})`
-        matchCount++
+    const newGame = function() {
+        DomController.removeBoard()
+        game = Game(players[0], players[1])
     }
 
-    return {appendMatch}
-}
+    const newMatchup = function(event) {
+        event.preventDefault()
+        const formData = new FormData(document.querySelector('.form'))
+        const oneName = formData.get('one-name')
+        const oneSymbol = formData.get('one-symbol')
+        const twoName = formData.get('two-name')
+        const twoSymbol = formData.get('two-symbol')
+        players = [Player(oneName, oneSymbol), Player(twoName, twoSymbol)]
+        matchup = DomController.displayMatchup(players)
+        newGame()
+    }
 
+    return {newGame, newMatchup, getMatchup}
+})()
 
-
-const domController = (function() {
+const DomController = (function() {
     const boardDOM = document.querySelector('.gameboard')
     const displayBoard = function(array, func) {
         for (const [index, cell] of array.entries()) {
@@ -111,26 +113,41 @@ const domController = (function() {
         }
     }
 
+    const removeBoard = () => document.querySelectorAll('.cell').forEach((item) => boardDOM.removeChild(item))
+
     const disableCells = function(array) {
         for (const cell of array) {
             cell.setAttribute('disabled', true)
         }
     }
 
-    /* const form = document.querySelector('.form')
-    form.addEventListener('submit', createPlayers)
-    function createPlayers(event) {
-    event.preventDefault()
-    const formData = new FormData(form)
-    const oneName = formData.get('one-name')
-    const oneSymbol = formData.get('one-symbol')
-    const twoName = formData.get('two-name')
-    const twoSymbol = formData.get('two-symbol')
-    const playerOne = Player(oneName, oneSymbol)
-    const playerTwo = Player(twoName, twoSymbol)
-    } */
-   
-    return {displayBoard, disableCells}
-})()
+    const list = document.querySelector('.list')
+    const displayMatchup = function(players) {
+        const matchup = document.createElement('li')
+        list.appendChild(matchup)
+        const matchupHeader = document.createElement('h2')
+        matchupHeader.textContent = `${players[0].getUsername()} (${players[0].getScore()}) vs. ${players[1].getUsername()} (${players[1].getScore()})`
+        matchup.appendChild(matchupHeader)
+        return function displayMatch(status, winner) {
+            const match = document.createElement('li')
+            if (status === 2) {
+                match.textContent = `${winner.getUsername()} won!`
+            } else {
+                match.textContent = 'Draw!'
+            }
+            matchupHeader.textContent = `${players[0].getUsername()} (${players[0].getScore()}) vs. ${players[1].getUsername()} (${players[1].getScore()})`
+            matchup.appendChild(match)
+        }
+    }
 
-const newGame = Game([Player('Bruce', 'X'), Player('Rob', 'O ')])
+    const newButton = document.querySelector('.new')
+    newButton.addEventListener('click', MatchController.newGame)
+    const form = document.querySelector('.form')
+    form.addEventListener('submit', MatchController.newMatchup)
+
+    const blank = Gameboard()
+    displayBoard(blank.getDisplay())
+    disableCells(blank.getDisplay())
+
+    return {displayBoard, disableCells, removeBoard, displayMatchup}
+})()
